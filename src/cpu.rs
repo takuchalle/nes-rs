@@ -44,6 +44,7 @@ impl CPU {
                     self.lda(param);
                 }
                 0xAA => self.tx(),
+                0xE8 => self.inx(),
                 0x00 => {
                     return;
                 }
@@ -64,6 +65,11 @@ impl CPU {
 
     fn tx(&mut self) {
         self.index_reg_x = self.reg_a;
+        self.update_zero_and_negative_flags(self.index_reg_x);
+    }
+
+    fn inx(&mut self) {
+        self.index_reg_x = self.index_reg_x.wrapping_add(1);
         self.update_zero_and_negative_flags(self.index_reg_x);
     }
 }
@@ -105,5 +111,22 @@ mod test {
         cpu.interpret(vec![0xaa, 0x00]);
         assert!(cpu.index_reg_x == 0);
         assert!(cpu.status & 0b0000_0010 == 0b10);
+    }
+
+       #[test]
+   fn test_5_ops_working_together() {
+       let mut cpu = CPU::new();
+       cpu.interpret(vec![0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
+
+       assert_eq!(cpu.index_reg_x, 0xc1)
+   }
+
+    #[test]
+    fn test_inx_overflow() {
+        let mut cpu = CPU::new();
+        cpu.index_reg_x = 0xff;
+        cpu.interpret(vec![0xe8, 0xe8, 0x00]);
+
+        assert_eq!(cpu.index_reg_x, 1)
     }
 }

@@ -7,6 +7,7 @@ pub struct CPU {
     pub index_reg_x: u8,
     pub index_reg_y: u8,
     pub status: u8,
+    memory: [u8; 0xFFFF]
 }
 
 const NEGATIVE_BIT: usize = 7;
@@ -28,18 +29,36 @@ impl CPU {
             index_reg_x: 0,
             index_reg_y: 0,
             status: 0,
+            memory: [0; 0xFFFF],
         }
     }
 
-    pub fn interpret(&mut self, program: Vec<u8>) {
-        self.pc = 0;
+    fn mem_read(&self, addr: u16) -> u8 {
+        self.memory[addr as usize]
+    }
+
+    fn mem_write(&mut self, addr: u16, data: u8) {
+        self.memory[addr as usize] = data;
+    }
+
+    pub fn load_and_run(&mut self, program: Vec<u8>) {
+        self.load(program);
+        self.run();
+    }
+
+    pub fn load(&mut self, program: Vec<u8>) {
+        self.memory[0x8000 .. (0x8000 + program.len())].copy_from_slice(&program[..]);
+        self.pc = 0x8000;
+    }
+
+    pub fn run(&mut self) {
         loop {
-            let opcode = program[self.pc as usize];
+            let opcode = self.mem_read(self.pc);
             self.pc += 1;
 
             match opcode {
                 0xA9 => {
-                    let param = program[self.pc as usize];
+                    let param = self.mem_read(self.pc);
                     self.pc += 1;
                     self.lda(param);
                 }
@@ -81,7 +100,7 @@ mod test {
     #[test]
     fn test_0xa9_lda_immidiate_load_data() {
         let mut cpu = CPU::new();
-        cpu.interpret(vec![0xa9, 0x05, 0x00]);
+        cpu.load_and_run(vec![0xa9, 0x05, 0x00]);
         assert_eq!(cpu.reg_a, 0x05);
         assert!(cpu.status & 0b0000_0010 == 0b00);
         assert!(cpu.status & 0b1000_0000 == 0);
@@ -90,7 +109,7 @@ mod test {
     #[test]
     fn test_0xa9_lda_zero_flag() {
         let mut cpu = CPU::new();
-        cpu.interpret(vec![0xa9, 0x00, 0x00]);
+        cpu.load_and_run(vec![0xa9, 0x00, 0x00]);
         assert!(cpu.status & 0b0000_0010 == 0b10);
     }
 
@@ -98,7 +117,7 @@ mod test {
     fn test_0xaa_tax_move_a_to_x() {
         let mut cpu = CPU::new();
         cpu.reg_a = 10;
-        cpu.interpret(vec![0xaa, 0x00]);
+        cpu.load_and_run(vec![0xaa, 0x00]);
         assert!(cpu.index_reg_x == 10);
         assert!(cpu.status & 0b0000_0010 == 0b00);
         assert!(cpu.status & 0b1000_0000 == 0);
@@ -108,7 +127,7 @@ mod test {
     fn test_0xaa_tax_move_a_to_x_zero_flg() {
         let mut cpu = CPU::new();
         cpu.reg_a = 0;
-        cpu.interpret(vec![0xaa, 0x00]);
+        cpu.load_and_run(vec![0xaa, 0x00]);
         assert!(cpu.index_reg_x == 0);
         assert!(cpu.status & 0b0000_0010 == 0b10);
     }
@@ -116,7 +135,7 @@ mod test {
        #[test]
    fn test_5_ops_working_together() {
        let mut cpu = CPU::new();
-       cpu.interpret(vec![0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
+       cpu.load_and_run(vec![0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
 
        assert_eq!(cpu.index_reg_x, 0xc1)
    }
@@ -125,7 +144,7 @@ mod test {
     fn test_inx_overflow() {
         let mut cpu = CPU::new();
         cpu.index_reg_x = 0xff;
-        cpu.interpret(vec![0xe8, 0xe8, 0x00]);
+        cpu.load_and_run(vec![0xe8, 0xe8, 0x00]);
 
         assert_eq!(cpu.index_reg_x, 1)
     }

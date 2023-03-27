@@ -41,17 +41,30 @@ impl CPU {
                 0xA9 => {
                     let param = program[self.pc as usize];
                     self.pc += 1;
-                    self.reg_a = param;
-                    self.status.set_bit(STATUS_BIT_Z, self.reg_a == 0);
-                    self.status
-                        .set_bit(STATUS_BIT_N, self.reg_a.get_bit(NEGATIVE_BIT));
+                    self.lda(param);
                 }
+                0xAA => self.tx(),
                 0x00 => {
                     return;
                 }
                 _ => todo!(),
             }
         }
+    }
+
+    fn update_zero_and_negative_flags(&mut self, reg: u8) {
+        self.status.set_bit(STATUS_BIT_Z, reg == 0);
+        self.status.set_bit(STATUS_BIT_N, reg.get_bit(NEGATIVE_BIT));
+    }
+
+    fn lda(&mut self, value: u8) {
+        self.reg_a = value;
+        self.update_zero_and_negative_flags(self.reg_a);
+    }
+
+    fn tx(&mut self) {
+        self.index_reg_x = self.reg_a;
+        self.update_zero_and_negative_flags(self.index_reg_x);
     }
 }
 
@@ -72,6 +85,25 @@ mod test {
     fn test_0xa9_lda_zero_flag() {
         let mut cpu = CPU::new();
         cpu.interpret(vec![0xa9, 0x00, 0x00]);
+        assert!(cpu.status & 0b0000_0010 == 0b10);
+    }
+
+    #[test]
+    fn test_0xaa_tax_move_a_to_x() {
+        let mut cpu = CPU::new();
+        cpu.reg_a = 10;
+        cpu.interpret(vec![0xaa, 0x00]);
+        assert!(cpu.index_reg_x == 10);
+        assert!(cpu.status & 0b0000_0010 == 0b00);
+        assert!(cpu.status & 0b1000_0000 == 0);
+    }
+
+    #[test]
+    fn test_0xaa_tax_move_a_to_x_zero_flg() {
+        let mut cpu = CPU::new();
+        cpu.reg_a = 0;
+        cpu.interpret(vec![0xaa, 0x00]);
+        assert!(cpu.index_reg_x == 0);
         assert!(cpu.status & 0b0000_0010 == 0b10);
     }
 }

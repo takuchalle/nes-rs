@@ -1,3 +1,4 @@
+use crate::opcodes;
 use bit_field::BitField;
 
 #[derive(Debug)]
@@ -12,7 +13,7 @@ pub enum AddressingMode {
     Absolute_Y,
     Indirect_X,
     Indirect_Y,
-    NonAddressing,
+    NoneAddressing,
 }
 
 pub struct CPU {
@@ -89,30 +90,23 @@ impl CPU {
     }
 
     pub fn run(&mut self) {
+        let opcodes = &opcodes::OPCODES_MAP;
         loop {
-            let opcode = self.mem_read(self.pc);
+            let code = self.mem_read(self.pc);
             self.pc += 1;
+            let opcode = opcodes
+                .get(&code)
+                .expect(&format!("OpCode {:x} is not recognized", code));
 
-            match opcode {
-                0xA9 => {
-                    self.lda(&AddressingMode::Immediate);
-                    self.pc += 1;
+            match code {
+                0xA9 | 0xA5 | 0xB5 | 0xAD | 0xBD | 0xB9 | 0xA1 | 0xB1 => {
+                    self.lda(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
                 }
-                0xA5 => {
-                    self.lda(&AddressingMode::ZeroPage);
-                    self.pc += 1;
-                }
-                0xAD => {
-                    self.lda(&AddressingMode::Absolute);
-                    self.pc += 2;
-                }
-                0x85 => {
-                    self.sta(&AddressingMode::ZeroPage);
-                    self.pc += 1;
-                }
-                0x95 => {
-                    self.sta(&AddressingMode::ZeroPage_X);
-                    self.pc += 1;
+
+                0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91 => {
+                    self.sta(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
                 }
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
@@ -161,7 +155,7 @@ impl CPU {
                 let deref_base = hi << 8 | lo;
                 deref_base.wrapping_add(self.index_reg_y as u16)
             }
-            AddressingMode::NonAddressing => panic!(""),
+            AddressingMode::NoneAddressing => panic!(""),
         }
     }
 

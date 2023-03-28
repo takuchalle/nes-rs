@@ -106,6 +106,14 @@ impl CPU {
                     self.lda(&AddressingMode::Absolute);
                     self.pc += 2;
                 }
+                0x85 => {
+                    self.sta(&AddressingMode::ZeroPage);
+                    self.pc += 1;
+                }
+                0x95 => {
+                    self.sta(&AddressingMode::ZeroPage_X);
+                    self.pc += 1;
+                }
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0x00 => {
@@ -168,6 +176,11 @@ impl CPU {
         self.update_zero_and_negative_flags(self.reg_a);
     }
 
+    fn sta(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        self.mem_write(addr, self.reg_a);
+    }
+
     fn tx(&mut self) {
         self.index_reg_x = self.reg_a;
         self.update_zero_and_negative_flags(self.index_reg_x);
@@ -206,6 +219,27 @@ mod test {
         cpu.mem_write(0x1000, 0x55);
         cpu.load_and_run(vec![0xad, 0x00, 0x10, 0x00]);
         assert_eq!(cpu.reg_a, 0x55);
+    }
+
+    #[test]
+    fn test_sta_to_zero_memory() {
+        let mut cpu = CPU::new();
+        cpu.load(vec![0x85, 0x10, 0x00]);
+        cpu.reset();
+        cpu.reg_a = 0x55;
+        cpu.run();
+        assert_eq!(cpu.mem_read(0x10), 0x55);
+    }
+
+    #[test]
+    fn test_sta_to_zero_x_memory() {
+        let mut cpu = CPU::new();
+        cpu.load(vec![0x95, 0x10, 0x00]);
+        cpu.reset();
+        cpu.reg_a = 0x55;
+        cpu.index_reg_x = 0x01;
+        cpu.run();
+        assert_eq!(cpu.mem_read(0x11), 0x55);
     }
 
     #[test]

@@ -34,7 +34,7 @@ const STATUS_BIT_N: usize = 7;
 // const STATUS_BIT_D: usize = 3;
 // const STATUS_BIT_I: usize = 2;
 const STATUS_BIT_Z: usize = 1;
-// const STATUS_BIT_C: usize = 0;
+const STATUS_BIT_C: usize = 0;
 
 impl CPU {
     pub fn new() -> Self {
@@ -108,6 +108,12 @@ impl CPU {
                     self.sta(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
                 }
+
+                0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 71 => {
+                    self.adc(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+                
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0x00 => {
@@ -173,6 +179,16 @@ impl CPU {
     fn sta(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         self.mem_write(addr, self.reg_a);
+    }
+
+    fn adc(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        let c = if self.status.get_bit(STATUS_BIT_C) { 1 } else { 0 };
+        let (v, o) = self.reg_a.overflowing_add(value + c);
+        self.status.set_bit(STATUS_BIT_C, o);
+        self.reg_a = v;
+        self.update_zero_and_negative_flags(self.reg_a);
     }
 
     fn tx(&mut self) {

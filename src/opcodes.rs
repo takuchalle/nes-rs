@@ -68,6 +68,9 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
         OpCode::new(0x16, "ASL", 2, 6, AddressingMode::ZeroPage_X),
         OpCode::new(0x0e, "ASL", 3, 6, AddressingMode::Absolute),
         OpCode::new(0x1e, "ASL", 3, 7, AddressingMode::Absolute_X),
+        /* Branch */
+        OpCode::new(0xb0, "BCS", 2, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0xf0, "BEQ", 2, 2, AddressingMode::NoneAddressing),
     ]
 });
 

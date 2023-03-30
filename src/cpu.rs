@@ -130,6 +130,14 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0xb0 => {
+                    self.branch(self.status.get_bit(STATUS_BIT_C));
+                }
+
+                0xf0 => {
+                    self.branch(self.status.get_bit(STATUS_BIT_Z));
+                }
+
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0x00 => {
@@ -240,6 +248,14 @@ impl CPU {
     fn inx(&mut self) {
         self.index_reg_x = self.index_reg_x.wrapping_add(1);
         self.update_zero_and_negative_flags(self.index_reg_x);
+    }
+
+    fn branch(&mut self, c: bool) {
+        if c {
+            let jump = self.mem_read(self.pc) as i8;
+            let value = self.pc.wrapping_add(1).wrapping_add(jump as u16);
+            self.pc = value;
+        }
     }
 }
 

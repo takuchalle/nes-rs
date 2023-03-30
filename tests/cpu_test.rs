@@ -75,3 +75,18 @@ fn test_asl_zero_page() {
     assert_eq!(cpu.reg_a, 0xf0);
     assert_eq!(cpu.status & 0b1000_0000, 0b1000_0000);
 }
+
+#[test]
+fn test_branch() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0x00, /* lda #0x00 */
+        0xf0, 0x02, /* BEQ #0x02 */
+        0x00, /* BRK */
+        0x00, /* BRK */
+        0xa9, 0x0e, /* lda #0xee */
+        0x00 /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x0e);
+    assert_eq!(cpu.status, 0x00);
+}

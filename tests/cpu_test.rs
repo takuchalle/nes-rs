@@ -49,3 +49,29 @@ fn test_and_absolute() {
     assert_eq!(cpu.reg_a, 0x00);
     assert_eq!(cpu.status & 0b0000_0010, 0b0000_0010);
 }
+
+#[test]
+fn test_asl() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0xf0, /* lda #0xf0 */
+        0x0a, /* asl accumulator */
+        0x00 /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0xe0);
+    assert_eq!(cpu.status & 0b0000_0001, 0b0000_0001);
+}
+
+#[test]
+fn test_asl_zero_page() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0x78, /* lda #0x78 */
+        0x85, 0x00, /* sta zero */
+        0x06, 0x00, /* asl zero */
+        0xa5, 0x00, /* lda zero */
+        0x00 /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0xf0);
+    assert_eq!(cpu.status & 0b1000_0000, 0b1000_0000);
+}

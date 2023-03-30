@@ -13,6 +13,7 @@ pub enum AddressingMode {
     Absolute_Y,
     Indirect_X,
     Indirect_Y,
+    Accumulator,
     NoneAddressing,
 }
 
@@ -27,6 +28,7 @@ pub struct CPU {
 }
 
 const NEGATIVE_BIT: usize = 7;
+const MSB: usize = 7;
 
 const STATUS_BIT_N: usize = 7;
 // const STATUS_BIT_V: usize = 6;
@@ -118,6 +120,11 @@ impl CPU {
                     self.and(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
                 }
+
+                0x0a | 0x06 | 0x16 | 0x0e | 0x1e => {
+                    self.asl(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
                 
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
@@ -166,6 +173,7 @@ impl CPU {
                 let deref_base = hi << 8 | lo;
                 deref_base.wrapping_add(self.index_reg_y as u16)
             }
+            AddressingMode::Accumulator => panic!(""),
             AddressingMode::NoneAddressing => panic!(""),
         }
     }
@@ -200,6 +208,25 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         self.reg_a &= self.mem_read(addr);
         self.update_zero_and_negative_flags(self.reg_a);
+    }
+
+    /* Arithmetic Shift Left */
+    fn asl(&mut self, mode: &AddressingMode) {
+        match mode {
+            &AddressingMode::Accumulator => {
+                self.status.set_bit(STATUS_BIT_C, self.reg_a.get_bit(MSB));
+                self.reg_a <<= 1;
+                self.update_zero_and_negative_flags(self.reg_a);
+            }
+            _ => {
+                let addr = self.get_operand_address(mode);
+                let mut value = self.mem_read(addr);
+                self.status.set_bit(STATUS_BIT_C, value.get_bit(MSB));
+                value <<= 1;
+                self.mem_write(addr, value);
+                self.update_zero_and_negative_flags(value);
+            }
+        }
     }
 
     fn tx(&mut self) {

@@ -13,7 +13,6 @@ pub enum AddressingMode {
     Absolute_Y,
     Indirect_X,
     Indirect_Y,
-    Accumulator,
     NoneAddressing,
 }
 
@@ -121,11 +120,16 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
-                0x0a | 0x06 | 0x16 | 0x0e | 0x1e => {
+                0x0a => {
+                    self.asl_accumulator();
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
+                0x06 | 0x16 | 0x0e | 0x1e => {
                     self.asl(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
                 }
-                
+
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0x00 => {
@@ -173,7 +177,6 @@ impl CPU {
                 let deref_base = hi << 8 | lo;
                 deref_base.wrapping_add(self.index_reg_y as u16)
             }
-            AddressingMode::Accumulator => panic!(""),
             AddressingMode::NoneAddressing => panic!(""),
         }
     }
@@ -197,7 +200,11 @@ impl CPU {
     fn adc(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
-        let c = if self.status.get_bit(STATUS_BIT_C) { 1 } else { 0 };
+        let c = if self.status.get_bit(STATUS_BIT_C) {
+            1
+        } else {
+            0
+        };
         let (v, o) = self.reg_a.overflowing_add(value + c);
         self.status.set_bit(STATUS_BIT_C, o);
         self.reg_a = v;
@@ -211,22 +218,18 @@ impl CPU {
     }
 
     /* Arithmetic Shift Left */
+    fn asl_accumulator(&mut self) {
+        self.status.set_bit(STATUS_BIT_C, self.reg_a.get_bit(MSB));
+        self.reg_a <<= 1;
+        self.update_zero_and_negative_flags(self.reg_a);
+    }
     fn asl(&mut self, mode: &AddressingMode) {
-        match mode {
-            &AddressingMode::Accumulator => {
-                self.status.set_bit(STATUS_BIT_C, self.reg_a.get_bit(MSB));
-                self.reg_a <<= 1;
-                self.update_zero_and_negative_flags(self.reg_a);
-            }
-            _ => {
-                let addr = self.get_operand_address(mode);
-                let mut value = self.mem_read(addr);
-                self.status.set_bit(STATUS_BIT_C, value.get_bit(MSB));
-                value <<= 1;
-                self.mem_write(addr, value);
-                self.update_zero_and_negative_flags(value);
-            }
-        }
+        let addr = self.get_operand_address(mode);
+        let mut value = self.mem_read(addr);
+        self.status.set_bit(STATUS_BIT_C, value.get_bit(MSB));
+        value <<= 1;
+        self.mem_write(addr, value);
+        self.update_zero_and_negative_flags(value);
     }
 
     fn tx(&mut self) {

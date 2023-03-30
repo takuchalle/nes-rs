@@ -109,8 +109,13 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
-                0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 71 => {
+                0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => {
                     self.adc(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
+                0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => {
+                    self.and(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
                 }
                 
@@ -188,6 +193,12 @@ impl CPU {
         let (v, o) = self.reg_a.overflowing_add(value + c);
         self.status.set_bit(STATUS_BIT_C, o);
         self.reg_a = v;
+        self.update_zero_and_negative_flags(self.reg_a);
+    }
+
+    fn and(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        self.reg_a &= self.mem_read(addr);
         self.update_zero_and_negative_flags(self.reg_a);
     }
 

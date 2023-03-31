@@ -138,6 +138,26 @@ impl CPU {
                     self.branch(self.status.get_bit(STATUS_BIT_Z));
                 }
 
+                0x30 => {
+                    self.branch(self.status.get_bit(STATUS_BIT_N));
+                }
+
+                0xd0 => {
+                    self.branch(!self.status.get_bit(STATUS_BIT_Z));
+                }
+
+                0x10 => {
+                    self.branch(!self.status.get_bit(STATUS_BIT_N));
+                }
+
+                0x50 => {
+                    self.branch(!self.status.get_bit(STATUS_BIT_V));
+                }
+
+                0x70 => {
+                    self.branch(self.status.get_bit(STATUS_BIT_V));
+                }
+
                 0x24 | 0x2c => {
                     self.bit(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;

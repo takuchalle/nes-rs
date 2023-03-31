@@ -32,8 +32,8 @@ const MSB: usize = 7;
 const STATUS_BIT_N: usize = 7;
 const STATUS_BIT_V: usize = 6;
 // const STATUS_BIT_B: usize = 4;
-// const STATUS_BIT_D: usize = 3;
-// const STATUS_BIT_I: usize = 2;
+const STATUS_BIT_D: usize = 3;
+const STATUS_BIT_I: usize = 2;
 const STATUS_BIT_Z: usize = 1;
 const STATUS_BIT_C: usize = 0;
 
@@ -163,6 +163,10 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                /* Clear */
+                0x18 => {self.status.set_bit(STATUS_BIT_C, false);}
+                0xd8 => {self.status.set_bit(STATUS_BIT_D, false);}
+                0x58 => {self.status.set_bit(STATUS_BIT_I, false);}
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0x00 => {

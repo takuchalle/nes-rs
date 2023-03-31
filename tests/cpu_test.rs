@@ -118,3 +118,16 @@ fn test_bit_non_zero_flg() {
     assert_eq!(cpu.reg_a, 0xf0);
     assert_eq!(cpu.status & 0b1100_0010, 0b1100_0000);
 }
+
+#[test]
+fn test_clc() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0xff, /* lda #0xff */
+        0x69, 0x01, /* adc #0x01 */
+        0x18, /* CLC */
+        0x00 /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x00);
+    assert_eq!(cpu.status & 0b0000_0001, 0b0000_0000);
+}

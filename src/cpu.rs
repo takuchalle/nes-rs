@@ -1,3 +1,5 @@
+use core::panic;
+
 use crate::opcodes;
 use bit_field::BitField;
 
@@ -36,6 +38,12 @@ const STATUS_BIT_D: usize = 3;
 const STATUS_BIT_I: usize = 2;
 const STATUS_BIT_Z: usize = 1;
 const STATUS_BIT_C: usize = 0;
+
+impl Default for CPU {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl CPU {
     pub fn new() -> Self {
@@ -97,7 +105,7 @@ impl CPU {
             self.pc += 1;
             let opcode = opcodes
                 .get(&code)
-                .expect(&format!("OpCode {:x} is not recognized", code));
+                .unwrap_or_else(|| panic!("OpCode {:x} is not recognized", code));
 
             match code {
                 0xA9 | 0xA5 | 0xB5 | 0xAD | 0xBD | 0xB9 | 0xA1 | 0xB1 => {
@@ -164,9 +172,15 @@ impl CPU {
                 }
 
                 /* Clear */
-                0x18 => {self.status.set_bit(STATUS_BIT_C, false);}
-                0xd8 => {self.status.set_bit(STATUS_BIT_D, false);}
-                0x58 => {self.status.set_bit(STATUS_BIT_I, false);}
+                0x18 => {
+                    self.status.set_bit(STATUS_BIT_C, false);
+                }
+                0xd8 => {
+                    self.status.set_bit(STATUS_BIT_D, false);
+                }
+                0x58 => {
+                    self.status.set_bit(STATUS_BIT_I, false);
+                }
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0x00 => {
@@ -237,11 +251,7 @@ impl CPU {
     fn adc(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
-        let c = if self.status.get_bit(STATUS_BIT_C) {
-            1
-        } else {
-            0
-        };
+        let c = u8::from(self.status.get_bit(STATUS_BIT_C));
         let (v, o) = self.reg_a.overflowing_add(value + c);
         self.status.set_bit(STATUS_BIT_C, o);
         self.reg_a = v;

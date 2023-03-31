@@ -30,7 +30,7 @@ const NEGATIVE_BIT: usize = 7;
 const MSB: usize = 7;
 
 const STATUS_BIT_N: usize = 7;
-// const STATUS_BIT_V: usize = 6;
+const STATUS_BIT_V: usize = 6;
 // const STATUS_BIT_B: usize = 4;
 // const STATUS_BIT_D: usize = 3;
 // const STATUS_BIT_I: usize = 2;
@@ -136,6 +136,11 @@ impl CPU {
 
                 0xf0 => {
                     self.branch(self.status.get_bit(STATUS_BIT_Z));
+                }
+
+                0x24 | 0x2c => {
+                    self.bit(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
                 }
 
                 0xAA => self.tx(),
@@ -256,6 +261,15 @@ impl CPU {
             let value = self.pc.wrapping_add(1).wrapping_add(jump as u16);
             self.pc = value;
         }
+    }
+
+    fn bit(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        let result = self.reg_a & value;
+        self.status.set_bit(STATUS_BIT_Z, result == 0x0);
+        self.status.set_bit(STATUS_BIT_V, value.get_bit(6));
+        self.status.set_bit(STATUS_BIT_N, value.get_bit(7));
     }
 }
 

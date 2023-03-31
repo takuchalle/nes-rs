@@ -90,3 +90,31 @@ fn test_branch() {
     assert_eq!(cpu.reg_a, 0x0e);
     assert_eq!(cpu.status, 0x00);
 }
+
+#[test]
+fn test_bit() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0xf0, /* lda #0xf0 */
+        0x85, 0x00, /* sta zero */
+        0xa9, 0x0f, /* lda #0x0f */
+        0x24, 0x00, /* bit zero */
+        0x00 /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x0f);
+    assert_eq!(cpu.status & 0b1100_0010, 0b1100_0010);
+}
+
+#[test]
+fn test_bit_non_zero_flg() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0xf0, /* lda #0xf0 */
+        0x85, 0x00, /* sta zero */
+        0xa9, 0xf0, /* lda #0xf0 */
+        0x24, 0x00, /* bit zero */
+        0x00 /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0xf0);
+    assert_eq!(cpu.status & 0b1100_0010, 0b1100_0000);
+}

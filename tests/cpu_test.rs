@@ -131,3 +131,29 @@ fn test_clc() {
     assert_eq!(cpu.reg_a, 0x00);
     assert_eq!(cpu.status & 0b0000_0001, 0b0000_0000);
 }
+
+#[test]
+fn test_cmp() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0x12, /* lda #0x12 */
+        0xc9, 0x12, /* cmp #0x12 */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x12);
+    assert_eq!(cpu.status & 0b1000_0011, 0b0000_0011);
+}
+
+#[test]
+fn test_cmp_negative() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0x02, /* lda #0x02 */
+        0x85, 0x00, /* sta zero */
+        0xa9, 0xf2, /* lda #0xf2 */
+        0xc5, 0x00, /* cmp zero */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0xf2);
+    assert_eq!(cpu.status & 0b1000_0011, 0b1000_0001);
+}

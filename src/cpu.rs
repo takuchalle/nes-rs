@@ -171,6 +171,11 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => {
+                    self.cmp(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
                 /* Clear */
                 0x18 => {
                     self.status.set_bit(STATUS_BIT_C, false);
@@ -304,6 +309,15 @@ impl CPU {
         self.status.set_bit(STATUS_BIT_Z, result == 0x0);
         self.status.set_bit(STATUS_BIT_V, value.get_bit(6));
         self.status.set_bit(STATUS_BIT_N, value.get_bit(7));
+    }
+
+    fn cmp(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        let result = self.reg_a.wrapping_sub(value);
+        self.status.set_bit(STATUS_BIT_Z, self.reg_a == value);
+        self.status.set_bit(STATUS_BIT_C, self.reg_a >= value);
+        self.status.set_bit(STATUS_BIT_N, result.get_bit(MSB));
     }
 }
 

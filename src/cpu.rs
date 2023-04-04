@@ -113,6 +113,16 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0xa2 | 0xa6 | 0xb6 | 0xae | 0xbe => {
+                    self.ldx(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
+                0xa0 | 0xa4 | 0xb4 | 0xac | 0xbc => {
+                    self.ldy(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
                 0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91 => {
                     self.sta(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
@@ -173,6 +183,16 @@ impl CPU {
 
                 0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => {
                     self.cmp(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
+                0xe0 | 0xe4 | 0xec => {
+                    self.cpx(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
+                0xc0 | 0xc4 | 0xcc => {
+                    self.cpy(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
                 }
 
@@ -248,6 +268,18 @@ impl CPU {
         self.update_zero_and_negative_flags(self.reg_a);
     }
 
+    fn ldx(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        self.index_reg_x = self.mem_read(addr);
+        self.update_zero_and_negative_flags(self.index_reg_x);
+    }
+
+    fn ldy(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        self.index_reg_y = self.mem_read(addr);
+        self.update_zero_and_negative_flags(self.index_reg_y);
+    }
+
     fn sta(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         self.mem_write(addr, self.reg_a);
@@ -317,6 +349,24 @@ impl CPU {
         let result = self.reg_a.wrapping_sub(value);
         self.status.set_bit(STATUS_BIT_Z, self.reg_a == value);
         self.status.set_bit(STATUS_BIT_C, self.reg_a >= value);
+        self.status.set_bit(STATUS_BIT_N, result.get_bit(MSB));
+    }
+
+    fn cpx(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        let result = self.index_reg_x.wrapping_sub(value);
+        self.status.set_bit(STATUS_BIT_Z, self.index_reg_x == value);
+        self.status.set_bit(STATUS_BIT_C, self.index_reg_x >= value);
+        self.status.set_bit(STATUS_BIT_N, result.get_bit(MSB));
+    }
+
+    fn cpy(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        let result = self.index_reg_y.wrapping_sub(value);
+        self.status.set_bit(STATUS_BIT_Z, self.index_reg_y == value);
+        self.status.set_bit(STATUS_BIT_C, self.index_reg_y >= value);
         self.status.set_bit(STATUS_BIT_N, result.get_bit(MSB));
     }
 }

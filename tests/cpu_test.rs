@@ -173,9 +173,34 @@ fn test_ldx() {
 fn test_ldy() {
     let mut cpu = nes_rs::cpu::CPU::new();
     cpu.load_and_run(vec![
-        0xa0, 0x02, /* ldx #0x02 */
+        0xa0, 0x02, /* ldy #0x02 */
         0x00, /* BRK */
     ]);
     assert_eq!(cpu.index_reg_y, 0x02);
     assert_eq!(cpu.status, 0x0);
 }
+
+#[test]
+fn test_cpx() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa2, 0x02, /* ldx #0x02 */
+        0xe0, 0x02, /* cpy #0x02 */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.index_reg_x, 0x02);
+    assert_eq!(cpu.status & 0b1000_0011, 0b0000_0011);
+}
+
+#[test]
+fn test_cpy() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa0, 0x02, /* ldx #0x02 */
+        0xc0, 0x02, /* cpy #0x02 */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.index_reg_y, 0x02);
+    assert_eq!(cpu.status & 0b1000_0011, 0b0000_0011);
+}
+

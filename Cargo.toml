@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 bit_field = "0.10.2"
 once_cell = "1.17.1"
+
+[dev-dependencies]
+bitflags = "1.2.1"

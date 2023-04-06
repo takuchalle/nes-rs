@@ -209,7 +209,7 @@ fn test_cpx() {
 fn test_cpy() {
     let mut cpu = nes_rs::cpu::CPU::new();
     cpu.load_and_run(vec![
-        0xa0, 0x02, /* ldx #0x02 */
+        0xa0, 0x02, /* ldy #0x02 */
         0xc0, 0x02, /* cpy #0x02 */
         0x00, /* BRK */
     ]);
@@ -229,5 +229,29 @@ fn test_dec() {
     ]);
     assert_eq!(cpu.reg_a, 0x03);
     assert_eq!(cpu.status & 0b0100_0001, 0b0000_0000);
+}
+
+#[test]
+fn test_dex() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa2, 0x01, /* ldx #0x01 */
+        0xca, /* dex */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.index_reg_x, 0x00);
+    assert_eq!(cpu.status & 0b1000_0010, 0b0000_0010);
+}
+
+#[test]
+fn test_dey() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa0, 0x01, /* ldy #0x01 */
+        0x88, /* dey */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.index_reg_y, 0x00);
+    assert_eq!(cpu.status & 0b1000_0010, 0b0000_0010);
 }
 

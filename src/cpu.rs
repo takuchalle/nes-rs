@@ -201,6 +201,16 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0xca => {
+                    self.dex();
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
+                0x88 => {
+                    self.dey();
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
                 /* Clear */
                 0x18 => {
                     self.status.set_bit(STATUS_BIT_C, false);
@@ -381,6 +391,16 @@ impl CPU {
         value = value.wrapping_sub(1);
         self.mem_write(addr, value);
         self.update_zero_and_negative_flags(value);
+    }
+
+    fn dex(&mut self) {
+        self.index_reg_x = self.index_reg_x.wrapping_sub(1);
+        self.update_zero_and_negative_flags(self.index_reg_x);
+    }
+
+    fn dey(&mut self) {
+        self.index_reg_y = self.index_reg_y.wrapping_sub(1);
+        self.update_zero_and_negative_flags(self.index_reg_y);
     }
 }
 

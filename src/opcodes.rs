@@ -119,6 +119,12 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
         OpCode::new(0xd6, "DEC", 2, 6, AddressingMode::ZeroPage_X),
         OpCode::new(0xce, "DEC", 3, 6, AddressingMode::Absolute),
         OpCode::new(0xde, "DEC", 3, 7, AddressingMode::Absolute_X),
+
+        /* DEX */
+        OpCode::new(0xca, "DEX", 1, 2, AddressingMode::NoneAddressing),
+
+        /* DEY */
+        OpCode::new(0x88, "DEY", 1, 2, AddressingMode::NoneAddressing),
     ]
 });
 

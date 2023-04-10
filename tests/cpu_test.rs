@@ -255,3 +255,17 @@ fn test_dey() {
     assert_eq!(cpu.status & 0b1000_0010, 0b0000_0010);
 }
 
+#[test]
+fn test_eor() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0xff, /* lda #0xff */
+        0x85, 0x00, /* sta zero */
+        0xa9, 0x0f, /* lda #0x0f */
+        0x45, 0x00, /* eor zero */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0xf0);
+    assert_eq!(cpu.status & 0b1000_0010, 0b1000_0000);
+}
+

@@ -211,6 +211,11 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0x49 | 0x45 | 0x55 | 0x4d | 0x5d | 0x59 | 0x41 | 0x51 => {
+                    self.eor(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
                 /* Clear */
                 0x18 => {
                     self.status.set_bit(STATUS_BIT_C, false);
@@ -401,6 +406,13 @@ impl CPU {
     fn dey(&mut self) {
         self.index_reg_y = self.index_reg_y.wrapping_sub(1);
         self.update_zero_and_negative_flags(self.index_reg_y);
+    }
+
+    fn eor(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        self.reg_a ^= value;
+        self.update_zero_and_negative_flags(self.reg_a);
     }
 }
 

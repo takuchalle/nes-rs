@@ -201,6 +201,11 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0xe6 | 0xf6 | 0xee | 0xfe => {
+                    self.inc(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
                 0xca => {
                     self.dex();
                     self.pc += (opcode.len - 1) as u16;
@@ -228,6 +233,7 @@ impl CPU {
                 }
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
+                0xc8 => self.iny(),
                 0x00 => {
                     return;
                 }
@@ -346,6 +352,11 @@ impl CPU {
         self.update_zero_and_negative_flags(self.index_reg_x);
     }
 
+    fn iny(&mut self) {
+        self.index_reg_y = self.index_reg_y.wrapping_add(1);
+        self.update_zero_and_negative_flags(self.index_reg_y);
+    }
+
     fn branch(&mut self, c: bool) {
         if c {
             let jump = self.mem_read(self.pc) as i8;
@@ -394,6 +405,14 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let mut value = self.mem_read(addr);
         value = value.wrapping_sub(1);
+        self.mem_write(addr, value);
+        self.update_zero_and_negative_flags(value);
+    }
+
+    fn inc(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let mut value = self.mem_read(addr);
+        value = value.wrapping_add(1);
         self.mem_write(addr, value);
         self.update_zero_and_negative_flags(value);
     }

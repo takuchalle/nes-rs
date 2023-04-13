@@ -238,6 +238,7 @@ impl CPU {
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0xc8 => self.iny(),
+                0x20 => self.jsr(),
 
                 /* JMP Absolute */
                 0x4c => {
@@ -481,6 +482,11 @@ impl CPU {
         let value = self.mem_read(addr);
         self.reg_a ^= value;
         self.update_zero_and_negative_flags(self.reg_a);
+    }
+
+    fn jsr(&mut self) {
+        self.stack_push_u16(self.pc + 2 - 1);
+        self.pc = self.mem_read_u16(self.pc);
     }
 }
 

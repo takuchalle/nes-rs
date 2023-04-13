@@ -39,6 +39,9 @@ const STATUS_BIT_I: usize = 2;
 const STATUS_BIT_Z: usize = 1;
 const STATUS_BIT_C: usize = 0;
 
+const STACK_RESET: u8 = 0xfd;
+const STACK_BASE: u16 = 0x100;
+
 impl Default for CPU {
     fn default() -> Self {
         Self::new()
@@ -50,7 +53,7 @@ impl CPU {
         CPU {
             pc: 0,
             reg_a: 0,
-            sp: 0,
+            sp: STACK_RESET,
             index_reg_x: 0,
             index_reg_y: 0,
             status: 0,
@@ -83,6 +86,7 @@ impl CPU {
         self.reg_a = 0;
         self.index_reg_x = 0;
         self.status = 0;
+        self.sp = STACK_RESET;
 
         self.pc = self.mem_read_u16(0xFFFC);
     }
@@ -234,12 +238,57 @@ impl CPU {
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0xc8 => self.iny(),
+
+                /* JMP Absolute */
+                0x4c => {
+                    let addr = self.mem_read_u16(self.pc);
+                    self.pc = addr;
+                }
+
+                /* JMP Indirect */
+                0x6c => {
+                    let addr = self.mem_read_u16(self.pc);
+
+                    let indirect_ref = if addr & 0x00FF == 0x00FF {
+                        let lo = self.mem_read(addr);
+                        let hi = self.mem_read(addr & 0xFF00);
+                        (hi as u16) << 8 | (lo as u16)
+                    } else {
+                        self.mem_read_u16(addr)
+                    };
+
+                    self.pc = indirect_ref;
+                }
                 0x00 => {
                     return;
                 }
                 _ => todo!(),
             }
         }
+    }
+
+    fn stack_pop(&mut self) -> u8 {
+        self.sp = self.sp.wrapping_add(1);
+        self.mem_read(STACK_BASE + self.sp as u16)
+    }
+
+    fn stack_pop_u16(&mut self) -> u16 {
+        let lo = self.stack_pop();
+        let hi = self.stack_pop();
+        (hi as u16) << 8 | lo as u16
+    }
+
+    fn stack_push(&mut self, data: u8) {
+        self.mem_write(STACK_BASE + self.sp as u16, data);
+        self.sp = self.sp.wrapping_sub(1);
+    }
+
+    fn stack_push_u16(&mut self, data: u16) {
+        let hi = ((data & 0xFF00) >> 8) as u8;
+        let lo = (data & 0x00FF) as u8;
+
+        self.stack_push(hi);
+        self.stack_push(lo);
     }
 
     fn get_operand_address(&self, mode: &AddressingMode) -> u16 {

@@ -152,6 +152,12 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0x4a => self.lsr_accumulator(),
+
+                0x46 | 0x56 | 0x4e | 0x5e => {
+                    self.lsr(&opcode.mode);
+                }
+
                 0xb0 => {
                     self.branch(self.status.get_bit(STATUS_BIT_C));
                 }
@@ -392,6 +398,23 @@ impl CPU {
         self.update_zero_and_negative_flags(value);
     }
 
+    fn lsr_accumulator(&mut self) {
+        let mut value = self.reg_a;
+        self.status.set_bit(STATUS_BIT_C, value.get_bit(0));
+        value >>= 1;
+        self.reg_a = value;
+        self.update_zero_and_negative_flags(value);
+    }
+
+    fn lsr(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let mut value = self.mem_read(addr);
+        self.status.set_bit(STATUS_BIT_C, value.get_bit(0));
+        value >>= 1;
+        self.mem_write(addr, value);
+        self.update_zero_and_negative_flags(value);
+    }
+
     fn tx(&mut self) {
         self.index_reg_x = self.reg_a;
         self.update_zero_and_negative_flags(self.index_reg_x);
@@ -488,6 +511,7 @@ impl CPU {
         self.stack_push_u16(self.pc + 2 - 1);
         self.pc = self.mem_read_u16(self.pc);
     }
+
 }
 
 #[cfg(test)]

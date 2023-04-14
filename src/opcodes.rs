@@ -140,6 +140,13 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
         /* JSR */
         OpCode::new(0x20, "JSR", 3, 6, AddressingMode::Absolute),
 
+        /* LSR */
+        OpCode::new(0x4a, "LSR", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0x46, "LSR", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0x56, "LSR", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0x4e, "LSR", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0x5e, "LSR", 3, 7, AddressingMode::Absolute_X),
+
         /* EOR */
         OpCode::new(0x49, "EOR", 2, 2, AddressingMode::Immediate),
         OpCode::new(0x45, "EOR", 2, 3, AddressingMode::ZeroPage),

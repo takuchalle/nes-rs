@@ -266,6 +266,7 @@ impl CPU {
 
                     self.pc = indirect_ref;
                 }
+                0xea => self.pc = self.pc.wrapping_add(1),
                 0x00 => {
                     return;
                 }

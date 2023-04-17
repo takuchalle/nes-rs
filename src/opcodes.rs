@@ -155,6 +155,9 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
         OpCode::new(0x59, "EOR", 3, 4, AddressingMode::Absolute_X),
         OpCode::new(0x41, "EOR", 2, 6, AddressingMode::Indirect_X),
         OpCode::new(0x51, "EOR", 2, 5, AddressingMode::Indirect_Y),
+
+        /* NOP */
+        OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
     ]
 });
 

@@ -283,3 +283,15 @@ fn test_inc() {
     assert_eq!(cpu.status & 0b0100_0001, 0b0000_0000);
 }
 
+#[test]
+fn test_ora() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0x04, /* lda #0x04 */
+        0x09, 0x40, /* ora #0x40 */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x44);
+    assert_eq!(cpu.status & 0b0100_0001, 0b0000_0000);
+}
+

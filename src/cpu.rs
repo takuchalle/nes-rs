@@ -231,6 +231,11 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11 => {
+                    self.ora(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
                 /* Clear */
                 0x18 => {
                     self.status.set_bit(STATUS_BIT_C, false);
@@ -505,6 +510,13 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
         self.reg_a ^= value;
+        self.update_zero_and_negative_flags(self.reg_a);
+    }
+
+    fn ora(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        self.reg_a |= value;
         self.update_zero_and_negative_flags(self.reg_a);
     }
 

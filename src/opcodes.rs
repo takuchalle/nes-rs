@@ -166,6 +166,12 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
         OpCode::new(0x01, "ORA", 2, 6, AddressingMode::Indirect_X),
         OpCode::new(0x11, "ORA", 2, 5/* +1 if page crossed*/, AddressingMode::Indirect_Y),
 
+        /* PHA */
+        OpCode::new(0x48, "PHA", 1, 3, AddressingMode::NoneAddressing),
+
+        /* PHP */
+        OpCode::new(0x08, "PHP", 1, 3, AddressingMode::NoneAddressing),
+
         /* NOP */
         OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
     ]

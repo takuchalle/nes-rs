@@ -271,6 +271,8 @@ impl CPU {
 
                     self.pc = indirect_ref;
                 }
+                0x48 => self.stack_push(self.reg_a),
+                0x08 => self.stack_push(self.status),
                 0xea => self.pc = self.pc.wrapping_add(1),
                 0x00 => {
                     return;

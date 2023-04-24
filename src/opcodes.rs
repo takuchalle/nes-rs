@@ -178,6 +178,13 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
         /* PLP */
         OpCode::new(0x28, "PLP", 1, 4, AddressingMode::NoneAddressing),
 
+        /* ROL */
+        OpCode::new(0x2a, "ROL", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0x26, "ROL", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0x36, "ROL", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0x2e, "ROL", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0x3e, "ROL", 3, 7, AddressingMode::Absolute_X),
+
         /* NOP */
         OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
     ]

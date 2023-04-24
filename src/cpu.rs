@@ -236,6 +236,12 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0x2a => self.rol_accumulator(),
+                0x26 | 0x36 | 0x2e | 0x3e => {
+                    self.rol(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                },
+
                 /* Clear */
                 0x18 => {
                     self.status.set_bit(STATUS_BIT_C, false);
@@ -271,6 +277,7 @@ impl CPU {
 
                     self.pc = indirect_ref;
                 }
+
                 0x48 => self.stack_push(self.reg_a),
                 0x08 => self.stack_push(self.status),
                 0x68 => self.reg_a = self.stack_pop(),
@@ -522,6 +529,25 @@ impl CPU {
         let value = self.mem_read(addr);
         self.reg_a |= value;
         self.update_zero_and_negative_flags(self.reg_a);
+    }
+
+    fn rol_accumulator(&mut self) {
+        let old = self.reg_a;
+        let mut value = old << 1;
+        self.status.set_bit(STATUS_BIT_C, old.get_bit(MSB));
+        value.set_bit(0, old.get_bit(MSB));
+        self.reg_a = value;
+        self.update_zero_and_negative_flags(self.reg_a);
+    }
+
+    fn rol(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let old = self.mem_read(addr);
+        let mut value = old << 1;
+        self.status.set_bit(STATUS_BIT_C, old.get_bit(MSB));
+        value.set_bit(0, old.get_bit(MSB));
+        self.mem_write(addr, value);
+        self.update_zero_and_negative_flags(value);
     }
 
     fn jsr(&mut self) {

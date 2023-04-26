@@ -299,11 +299,23 @@ fn test_ora() {
 fn test_rol() {
     let mut cpu = nes_rs::cpu::CPU::new();
     cpu.load_and_run(vec![
-        0xa9, 0xf0, /* lda #0x04 */
+        0xa9, 0xf0, /* lda #0xf0 */
         0x2a, /* rol */
         0x00, /* BRK */
     ]);
     assert_eq!(cpu.reg_a, 0xe1);
     assert_eq!(cpu.status & 0b1100_0001, 0b1000_0001);
+}
+
+#[test]
+fn test_ror() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0xf0, /* lda #0xf0 */
+        0x6a, /* ror */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x78);
+    assert_eq!(cpu.status & 0b1100_0001, 0b0000_0000);
 }
 

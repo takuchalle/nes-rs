@@ -242,6 +242,12 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 },
 
+                0x6a => self.ror_accumulator(),
+                0x66 | 0x76 | 0x6e | 0x7e => {
+                    self.ror(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                },
+
                 /* Clear */
                 0x18 => {
                     self.status.set_bit(STATUS_BIT_C, false);
@@ -546,6 +552,25 @@ impl CPU {
         let mut value = old << 1;
         self.status.set_bit(STATUS_BIT_C, old.get_bit(MSB));
         value.set_bit(0, old.get_bit(MSB));
+        self.mem_write(addr, value);
+        self.update_zero_and_negative_flags(value);
+    }
+
+    fn ror_accumulator(&mut self) {
+        let old = self.reg_a;
+        let mut value = old >> 1;
+        self.status.set_bit(STATUS_BIT_C, old.get_bit(0));
+        value.set_bit(MSB, old.get_bit(0));
+        self.reg_a = value;
+        self.update_zero_and_negative_flags(self.reg_a);
+    }
+
+    fn ror(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let old = self.mem_read(addr);
+        let mut value = old >> 1;
+        self.status.set_bit(STATUS_BIT_C, old.get_bit(0));
+        value.set_bit(MSB, old.get_bit(0));
         self.mem_write(addr, value);
         self.update_zero_and_negative_flags(value);
     }

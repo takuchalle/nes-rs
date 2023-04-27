@@ -192,6 +192,9 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
         OpCode::new(0x6e, "ROR", 3, 6, AddressingMode::Absolute),
         OpCode::new(0x7e, "ROR", 3, 7, AddressingMode::Absolute_X),
 
+        /* RTI */
+        OpCode::new(0x40, "RTI", 1, 6, AddressingMode::NoneAddressing),
+
         /* NOP */
         OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
     ]

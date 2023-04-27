@@ -284,6 +284,7 @@ impl CPU {
                     self.pc = indirect_ref;
                 }
 
+                0x40 => self.rti(),
                 0x48 => self.stack_push(self.reg_a),
                 0x08 => self.stack_push(self.status),
                 0x68 => self.reg_a = self.stack_pop(),
@@ -580,6 +581,10 @@ impl CPU {
         self.pc = self.mem_read_u16(self.pc);
     }
 
+    fn rti(&mut self) {
+        self.status = self.stack_pop();
+        self.pc = self.stack_pop_u16();
+    }
 }
 
 #[cfg(test)]

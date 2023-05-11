@@ -30,6 +30,18 @@ fn test_adc_carried() {
 }
 
 #[test]
+fn test_adc_overflow() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa9, 0x80, /* lda #0x80 */
+        0x69, 0x80, /* adc #0x80*/
+        0x00,       /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x00);
+    assert_eq!(cpu.status & 0b0000_0011, 0b0000_00011);
+}
+
+#[test]
 fn test_and() {
     let mut cpu = nes_rs::cpu::CPU::new();
     cpu.load_and_run(vec![0xa9, 0xff, 0x29, 0x0f, 0x00]);

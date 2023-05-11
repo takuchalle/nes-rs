@@ -395,10 +395,17 @@ impl CPU {
     fn adc(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
-        let c = u8::from(self.status.get_bit(STATUS_BIT_C));
-        let (v, o) = self.reg_a.overflowing_add(value + c);
-        self.status.set_bit(STATUS_BIT_C, o);
-        self.reg_a = v;
+        let c = u16::from(self.status.get_bit(STATUS_BIT_C));
+        let old = self.reg_a;
+
+        let result = u16::from(value) + u16::from(old) + c;
+
+        self.status.set_bit(STATUS_BIT_C, result > 0xFF);
+
+        let result = (result & 0xFF) as u8;
+        self.status.set_bit(STATUS_BIT_V, ((result ^ value) & (result ^ old) & 0x80) != 0);
+
+        self.reg_a = result;
         self.update_zero_and_negative_flags(self.reg_a);
     }
 

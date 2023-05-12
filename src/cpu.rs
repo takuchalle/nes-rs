@@ -236,6 +236,11 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0xe9 | 0xe5 | 0xf5 | 0xed | 0xfd | 0xf9 | 0xe1 | 0xf1 => {
+                    self.sbc(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                },
+
                 0x2a => self.rol_accumulator(),
                 0x26 | 0x36 | 0x2e | 0x3e => {
                     self.rol(&opcode.mode);
@@ -396,18 +401,36 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let value = self.mem_read(addr);
         let c = u16::from(self.status.get_bit(STATUS_BIT_C));
-        let old = self.reg_a;
 
-        let result = u16::from(value) + u16::from(old) + c;
+        let result = u16::from(value) + u16::from(self.reg_a) + c;
 
         self.status.set_bit(STATUS_BIT_C, result > 0xFF);
 
         let result = (result & 0xFF) as u8;
-        self.status.set_bit(STATUS_BIT_V, ((result ^ value) & (result ^ old) & 0x80) != 0);
+        self.status.set_bit(STATUS_BIT_V, ((result ^ value) & (result ^ self.reg_a) & 0x80) != 0);
 
         self.reg_a = result;
         self.update_zero_and_negative_flags(self.reg_a);
     }
+
+    // A - B - (1 - C) = A + (-B) - 1 + C = A + (-B - 1) + C
+    fn sbc(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        let value = self.mem_read(addr);
+        let c = u16::from(self.status.get_bit(STATUS_BIT_C));
+        let value = (value as i8).wrapping_neg().wrapping_sub(1) as u8;
+
+        let result = u16::from(value) + u16::from(self.reg_a) + c;
+
+        self.status.set_bit(STATUS_BIT_C, result > 0xFF);
+
+        let result = (result & 0xFF) as u8;
+        self.status.set_bit(STATUS_BIT_V, ((result ^ value) & (result ^ self.reg_a) & 0x80) != 0);
+
+        self.reg_a = result;
+        self.update_zero_and_negative_flags(self.reg_a);
+    }
+
 
     fn and(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);

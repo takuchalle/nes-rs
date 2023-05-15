@@ -263,6 +263,10 @@ impl CPU {
                 0x58 => {
                     self.status.set_bit(STATUS_BIT_I, false);
                 }
+                /* Set */
+                0x38 => {
+                    self.status.set_bit(STATUS_BIT_C, true);
+                }
                 0xAA => self.tx(),
                 0xE8 => self.inx(),
                 0xc8 => self.iny(),

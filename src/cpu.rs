@@ -239,19 +239,19 @@ impl CPU {
                 0xe9 | 0xe5 | 0xf5 | 0xed | 0xfd | 0xf9 | 0xe1 | 0xf1 => {
                     self.sbc(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
-                },
+                }
 
                 0x2a => self.rol_accumulator(),
                 0x26 | 0x36 | 0x2e | 0x3e => {
                     self.rol(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
-                },
+                }
 
                 0x6a => self.ror_accumulator(),
                 0x66 | 0x76 | 0x6e | 0x7e => {
                     self.ror(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
-                },
+                }
 
                 /* Clear */
                 0x18 => {
@@ -411,7 +411,10 @@ impl CPU {
         self.status.set_bit(STATUS_BIT_C, result > 0xFF);
 
         let result = (result & 0xFF) as u8;
-        self.status.set_bit(STATUS_BIT_V, ((result ^ value) & (result ^ self.reg_a) & 0x80) != 0);
+        self.status.set_bit(
+            STATUS_BIT_V,
+            ((result ^ value) & (result ^ self.reg_a) & 0x80) != 0,
+        );
 
         self.reg_a = result;
         self.update_zero_and_negative_flags(self.reg_a);
@@ -429,12 +432,14 @@ impl CPU {
         self.status.set_bit(STATUS_BIT_C, result > 0xFF);
 
         let result = (result & 0xFF) as u8;
-        self.status.set_bit(STATUS_BIT_V, ((result ^ value) & (result ^ self.reg_a) & 0x80) != 0);
+        self.status.set_bit(
+            STATUS_BIT_V,
+            ((result ^ value) & (result ^ self.reg_a) & 0x80) != 0,
+        );
 
         self.reg_a = result;
         self.update_zero_and_negative_flags(self.reg_a);
     }
-
 
     fn and(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);

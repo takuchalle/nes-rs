@@ -35,7 +35,7 @@ fn test_adc_overflow() {
     cpu.load_and_run(vec![
         0xa9, 0x80, /* lda #0x80 */
         0x69, 0x80, /* adc #0x80*/
-        0x00,       /* BRK */
+        0x00, /* BRK */
     ]);
     assert_eq!(cpu.reg_a, 0x00);
     assert_eq!(cpu.status & 0b0000_0011, 0b0000_00011);
@@ -47,7 +47,8 @@ fn test_sbc() {
     cpu.load_and_run(vec![
         0xa9, 0xfe, /* lda #0xfe */
         0xe9, 0x01, /* sbc #0x01 */
-        0x00]);
+        0x00,
+    ]);
     assert_eq!(cpu.reg_a, 0xfc);
     assert_eq!(cpu.status & 0b1000_0011, 0b10000001);
 }
@@ -197,10 +198,7 @@ fn test_cmp_negative() {
 #[test]
 fn test_ldx() {
     let mut cpu = nes_rs::cpu::CPU::new();
-    cpu.load_and_run(vec![
-        0xa2, 0x02, /* ldx #0x02 */
-        0x00, /* BRK */
-    ]);
+    cpu.load_and_run(vec![0xa2, 0x02 /* ldx #0x02 */, 0x00 /* BRK */]);
     assert_eq!(cpu.index_reg_x, 0x02);
     assert_eq!(cpu.status, 0x0);
 }
@@ -208,10 +206,7 @@ fn test_ldx() {
 #[test]
 fn test_ldy() {
     let mut cpu = nes_rs::cpu::CPU::new();
-    cpu.load_and_run(vec![
-        0xa0, 0x02, /* ldy #0x02 */
-        0x00, /* BRK */
-    ]);
+    cpu.load_and_run(vec![0xa0, 0x02 /* ldy #0x02 */, 0x00 /* BRK */]);
     assert_eq!(cpu.index_reg_y, 0x02);
     assert_eq!(cpu.status, 0x0);
 }
@@ -341,4 +336,3 @@ fn test_ror() {
     assert_eq!(cpu.reg_a, 0x78);
     assert_eq!(cpu.status & 0b1100_0001, 0b0000_0000);
 }
-

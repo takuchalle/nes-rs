@@ -264,8 +264,17 @@ impl CPU {
                     self.status.set_bit(STATUS_BIT_I, false);
                 }
                 /* Set */
+                /* Carry flag */
                 0x38 => {
                     self.status.set_bit(STATUS_BIT_C, true);
+                }
+                /* Decimal flag */
+                0xf8 => {
+                    self.status.set_bit(STATUS_BIT_D, true);
+                }
+                /* Interrupt Disable */
+                0x78 => {
+                    self.status.set_bit(STATUS_BIT_I, true);
                 }
                 0xAA => self.tx(),
                 0xE8 => self.inx(),

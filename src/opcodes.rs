@@ -310,6 +310,10 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
         ),
         /* SEC */
         OpCode::new(0x38, "SEC", 1, 2, AddressingMode::NoneAddressing),
+        /* SED */
+        OpCode::new(0xf8, "SED", 1, 2, AddressingMode::NoneAddressing),
+        /* SEI */
+        OpCode::new(0x78, "SEI", 1, 2, AddressingMode::NoneAddressing),
         /* NOP */
         OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
     ]

@@ -198,7 +198,7 @@ fn test_cmp_negative() {
 #[test]
 fn test_ldx() {
     let mut cpu = nes_rs::cpu::CPU::new();
-    cpu.load_and_run(vec![0xa2, 0x02 /* ldx #0x02 */, 0x00 /* BRK */]);
+    cpu.load_and_run(vec![0xa2, 0x02 /* ldx #0x02 */, 0x00, /* BRK */]);
     assert_eq!(cpu.index_reg_x, 0x02);
     assert_eq!(cpu.status, 0x0);
 }
@@ -335,4 +335,16 @@ fn test_ror() {
     ]);
     assert_eq!(cpu.reg_a, 0x78);
     assert_eq!(cpu.status & 0b1100_0001, 0b0000_0000);
+}
+
+#[test]
+fn test_stx() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa2, 0x02, /* ldx #0x02 */
+        0x86, 0x00, /* stx zero */
+        0xa5, 0x00, /* lda zero */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x02);
 }

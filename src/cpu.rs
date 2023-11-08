@@ -137,6 +137,11 @@ impl CPU {
                     self.pc += (opcode.len - 1) as u16;
                 }
 
+                0x84 | 0x94 | 0x8c => {
+                    self.sty(&opcode.mode);
+                    self.pc += (opcode.len - 1) as u16;
+                }
+
                 0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => {
                     self.adc(&opcode.mode);
                     self.pc += (opcode.len - 1) as u16;
@@ -418,6 +423,11 @@ impl CPU {
     fn stx(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         self.mem_write(addr, self.index_reg_x);
+    }
+
+    fn sty(&mut self, mode: &AddressingMode) {
+        let addr = self.get_operand_address(mode);
+        self.mem_write(addr, self.index_reg_y);
     }
 
     fn adc(&mut self, mode: &AddressingMode) {

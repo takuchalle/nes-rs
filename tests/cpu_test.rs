@@ -348,3 +348,15 @@ fn test_stx() {
     ]);
     assert_eq!(cpu.reg_a, 0x02);
 }
+
+#[test]
+fn test_sty() {
+    let mut cpu = nes_rs::cpu::CPU::new();
+    cpu.load_and_run(vec![
+        0xa0, 0x02, /* ldy #0x02 */
+        0x84, 0x00, /* sty zero */
+        0xa5, 0x00, /* lda zero */
+        0x00, /* BRK */
+    ]);
+    assert_eq!(cpu.reg_a, 0x02);
+}

@@ -198,7 +198,7 @@ fn test_cmp_negative() {
 #[test]
 fn test_ldx() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![0xa2, 0x02 /* ldx #0x02 */, 0x00, /* BRK */]);
+    cpu.load_and_run(vec![0xa2, 0x02 /* ldx #0x02 */, 0x00 /* BRK */]);
     assert_eq!(cpu.index_reg_x, 0x02);
     assert_eq!(cpu.status, 0x0);
 }

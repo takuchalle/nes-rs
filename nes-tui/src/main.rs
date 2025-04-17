@@ -1,3 +1,6 @@
+use nes_core::Nes;
+
 fn main() {
-    println!("Hello, world!");
+    let rom = vec![];
+    let _nes = Nes::new(&rom);
 }

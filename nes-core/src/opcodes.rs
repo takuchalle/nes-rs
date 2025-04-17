@@ -1,6 +1,6 @@
 use crate::cpu::AddressingMode;
-use once_cell::sync::Lazy;
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 pub struct OpCode {
     pub code: u8,
@@ -22,7 +22,7 @@ impl OpCode {
     }
 }
 
-pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
+pub static CPU_OPS_CODES: LazyLock<Vec<OpCode>> = LazyLock::new(|| {
     vec![
         OpCode::new(0x00, "BRK", 1, 7, AddressingMode::NoneAddressing),
         OpCode::new(0xaa, "TAX", 1, 2, AddressingMode::NoneAddressing),
@@ -327,7 +327,7 @@ pub static CPU_OPS_CODES: Lazy<Vec<OpCode>> = Lazy::new(|| {
     ]
 });
 
-pub static OPCODES_MAP: Lazy<HashMap<u8, &'static OpCode>> = Lazy::new(|| {
+pub static OPCODES_MAP: LazyLock<HashMap<u8, &'static OpCode>> = LazyLock::new(|| {
     let mut map = HashMap::new();
     for cpuop in &*CPU_OPS_CODES {
         map.insert(cpuop.code, cpuop);

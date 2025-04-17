@@ -16,7 +16,7 @@ bitflags! {
 #[test]
 fn test_adc() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![0xa9, 0xfe, 0x69, 0x01, 0x00]);
+    cpu.load_and_run(&vec![0xa9, 0xfe, 0x69, 0x01, 0x00]);
     assert_eq!(cpu.reg_a, 0xFF);
     assert_eq!(cpu.status & 0b0000_0001, 0x0);
 }
@@ -24,7 +24,7 @@ fn test_adc() {
 #[test]
 fn test_adc_carried() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![0xa9, 0xff, 0x69, 0x01, 0x00]);
+    cpu.load_and_run(&vec![0xa9, 0xff, 0x69, 0x01, 0x00]);
     assert_eq!(cpu.reg_a, 0x00);
     assert_eq!(cpu.status & 0b0000_0001, 0b0000_00001);
 }
@@ -32,7 +32,7 @@ fn test_adc_carried() {
 #[test]
 fn test_adc_overflow() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0x80, /* lda #0x80 */
         0x69, 0x80, /* adc #0x80*/
         0x00, /* BRK */
@@ -44,7 +44,7 @@ fn test_adc_overflow() {
 #[test]
 fn test_sbc() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xfe, /* lda #0xfe */
         0xe9, 0x01, /* sbc #0x01 */
         0x00,
@@ -56,14 +56,14 @@ fn test_sbc() {
 #[test]
 fn test_and() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![0xa9, 0xff, 0x29, 0x0f, 0x00]);
+    cpu.load_and_run(&vec![0xa9, 0xff, 0x29, 0x0f, 0x00]);
     assert_eq!(cpu.reg_a, 0x0f);
 }
 
 #[test]
 fn test_and_zero_page() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xff, /* lda #0xff */
         0x85, 0x00, /* sta zero */
         0xa9, 0x0f, /* lda #0x0f */
@@ -76,7 +76,7 @@ fn test_and_zero_page() {
 #[test]
 fn test_and_absolute() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xf0, /* lda #0xf0 */
         0x85, 0x00, /* sta zero */
         0xa9, 0x0f, /* lda #0x0f */
@@ -90,7 +90,7 @@ fn test_and_absolute() {
 #[test]
 fn test_asl() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xf0, /* lda #0xf0 */
         0x0a, /* asl accumulator */
         0x00, /* BRK */
@@ -102,7 +102,7 @@ fn test_asl() {
 #[test]
 fn test_asl_zero_page() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0x78, /* lda #0x78 */
         0x85, 0x00, /* sta zero */
         0x06, 0x00, /* asl zero */
@@ -116,7 +116,7 @@ fn test_asl_zero_page() {
 #[test]
 fn test_branch() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0x00, /* lda #0x00 */
         0xf0, 0x02, /* BEQ #0x02 */
         0x00, /* BRK */
@@ -131,7 +131,7 @@ fn test_branch() {
 #[test]
 fn test_bit() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xf0, /* lda #0xf0 */
         0x85, 0x00, /* sta zero */
         0xa9, 0x0f, /* lda #0x0f */
@@ -145,7 +145,7 @@ fn test_bit() {
 #[test]
 fn test_bit_non_zero_flg() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xf0, /* lda #0xf0 */
         0x85, 0x00, /* sta zero */
         0xa9, 0xf0, /* lda #0xf0 */
@@ -159,7 +159,7 @@ fn test_bit_non_zero_flg() {
 #[test]
 fn test_clc() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xff, /* lda #0xff */
         0x69, 0x01, /* adc #0x01 */
         0x18, /* CLC */
@@ -172,7 +172,7 @@ fn test_clc() {
 #[test]
 fn test_cmp() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0x12, /* lda #0x12 */
         0xc9, 0x12, /* cmp #0x12 */
         0x00, /* BRK */
@@ -184,7 +184,7 @@ fn test_cmp() {
 #[test]
 fn test_cmp_negative() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0x02, /* lda #0x02 */
         0x85, 0x00, /* sta zero */
         0xa9, 0xf2, /* lda #0xf2 */
@@ -198,7 +198,7 @@ fn test_cmp_negative() {
 #[test]
 fn test_ldx() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![0xa2, 0x02 /* ldx #0x02 */, 0x00 /* BRK */]);
+    cpu.load_and_run(&vec![0xa2, 0x02 /* ldx #0x02 */, 0x00 /* BRK */]);
     assert_eq!(cpu.index_reg_x, 0x02);
     assert_eq!(cpu.status, 0x0);
 }
@@ -206,7 +206,7 @@ fn test_ldx() {
 #[test]
 fn test_ldy() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![0xa0, 0x02 /* ldy #0x02 */, 0x00 /* BRK */]);
+    cpu.load_and_run(&vec![0xa0, 0x02 /* ldy #0x02 */, 0x00 /* BRK */]);
     assert_eq!(cpu.index_reg_y, 0x02);
     assert_eq!(cpu.status, 0x0);
 }
@@ -214,7 +214,7 @@ fn test_ldy() {
 #[test]
 fn test_cpx() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa2, 0x02, /* ldx #0x02 */
         0xe0, 0x02, /* cpy #0x02 */
         0x00, /* BRK */
@@ -226,7 +226,7 @@ fn test_cpx() {
 #[test]
 fn test_cpy() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa0, 0x02, /* ldy #0x02 */
         0xc0, 0x02, /* cpy #0x02 */
         0x00, /* BRK */
@@ -238,7 +238,7 @@ fn test_cpy() {
 #[test]
 fn test_dec() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0x04, /* lda #0x04 */
         0x85, 0x00, /* sta zero */
         0xc6, 0x00, /* dec zero */
@@ -252,7 +252,7 @@ fn test_dec() {
 #[test]
 fn test_dex() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa2, 0x01, /* ldx #0x01 */
         0xca, /* dex */
         0x00, /* BRK */
@@ -264,7 +264,7 @@ fn test_dex() {
 #[test]
 fn test_dey() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa0, 0x01, /* ldy #0x01 */
         0x88, /* dey */
         0x00, /* BRK */
@@ -276,7 +276,7 @@ fn test_dey() {
 #[test]
 fn test_eor() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xff, /* lda #0xff */
         0x85, 0x00, /* sta zero */
         0xa9, 0x0f, /* lda #0x0f */
@@ -290,7 +290,7 @@ fn test_eor() {
 #[test]
 fn test_inc() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0x04, /* lda #0x04 */
         0x85, 0x00, /* sta zero */
         0xe6, 0x00, /* dec zero */
@@ -304,7 +304,7 @@ fn test_inc() {
 #[test]
 fn test_ora() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0x04, /* lda #0x04 */
         0x09, 0x40, /* ora #0x40 */
         0x00, /* BRK */
@@ -316,7 +316,7 @@ fn test_ora() {
 #[test]
 fn test_rol() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xf0, /* lda #0xf0 */
         0x2a, /* rol */
         0x00, /* BRK */
@@ -328,7 +328,7 @@ fn test_rol() {
 #[test]
 fn test_ror() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa9, 0xf0, /* lda #0xf0 */
         0x6a, /* ror */
         0x00, /* BRK */
@@ -340,7 +340,7 @@ fn test_ror() {
 #[test]
 fn test_stx() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa2, 0x02, /* ldx #0x02 */
         0x86, 0x00, /* stx zero */
         0xa5, 0x00, /* lda zero */
@@ -352,7 +352,7 @@ fn test_stx() {
 #[test]
 fn test_sty() {
     let mut cpu = nes_core::cpu::CPU::new();
-    cpu.load_and_run(vec![
+    cpu.load_and_run(&vec![
         0xa0, 0x02, /* ldy #0x02 */
         0x84, 0x00, /* sty zero */
         0xa5, 0x00, /* lda zero */

@@ -2,6 +2,7 @@ use crate::cpu::AddressingMode;
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
+#[derive(Debug)]
 pub struct OpCode {
     pub code: u8,
     pub mnemonic: &'static str,

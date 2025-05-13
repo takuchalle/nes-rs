@@ -98,13 +98,22 @@ impl CPU {
     }
 
     pub fn load(&mut self, program: &[u8]) {
-        self.memory[0x8000..(0x8000 + program.len())].copy_from_slice(program);
-        self.mem_write_u16(0xFFFC, 0x8000);
+        self.memory[0x0600..(0x0600 + program.len())].copy_from_slice(program);
+        self.mem_write_u16(0xFFFC, 0x0600);
     }
 
     pub fn run(&mut self) {
+        self.run_with_callback(|_| {});
+    }
+
+    pub fn run_with_callback<F>(&mut self, mut callback: F)
+    where
+        F: FnMut(&mut CPU),
+    {
         let opcodes = &opcodes::OPCODES_MAP;
         loop {
+            callback(self);
+
             let code = self.mem_read(self.pc);
             self.pc += 1;
             let opcode = opcodes

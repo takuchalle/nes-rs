@@ -328,7 +328,7 @@ impl CPU {
                 0x08 => self.stack_push(self.status),
                 0x68 => self.reg_a = self.stack_pop(),
                 0x28 => self.status = self.stack_pop(),
-                0xea => self.pc = self.pc.wrapping_add(1),
+                0xea => {} // NOP
                 0x00 => {
                     return;
                 }

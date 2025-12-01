@@ -296,7 +296,8 @@ impl CPU {
                 0x78 => {
                     self.status.set_bit(STATUS_BIT_I, true);
                 }
-                0xAA => self.tx(),
+                0xAA => self.tax(),
+                0x8A => self.txa(),
                 0xE8 => self.inx(),
                 0xc8 => self.iny(),
                 0x20 => self.jsr(),
@@ -522,11 +523,15 @@ impl CPU {
         self.update_zero_and_negative_flags(value);
     }
 
-    fn tx(&mut self) {
+    fn tax(&mut self) {
         self.index_reg_x = self.reg_a;
         self.update_zero_and_negative_flags(self.index_reg_x);
     }
 
+    fn txa(&mut self) {
+        self.reg_a = self.index_reg_x;
+        self.update_zero_and_negative_flags(self.reg_a);
+    }
     fn inx(&mut self) {
         self.index_reg_x = self.index_reg_x.wrapping_add(1);
         self.update_zero_and_negative_flags(self.index_reg_x);

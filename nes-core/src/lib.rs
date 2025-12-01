@@ -12,4 +12,11 @@ impl Nes {
         cpu.reset();
         Self { cpu }
     }
+
+    pub fn exec<F>(&mut self, callback: F)
+    where
+        F: FnMut(&mut cpu::CPU),
+    {
+        self.cpu.run_with_callback(callback);
+    }
 }

@@ -116,6 +116,7 @@ impl CPU {
 
             let code = self.mem_read(self.pc);
             self.pc += 1;
+            let pc_state = self.pc;
             let opcode = opcodes
                 .get(&code)
                 .unwrap_or_else(|| panic!("OpCode {:x} is not recognized", code));
@@ -332,6 +333,10 @@ impl CPU {
                     return;
                 }
                 _ => todo!(),
+            }
+
+            if pc_state == self.pc {
+                self.pc += (opcode.len - 1) as u16;
             }
         }
     }

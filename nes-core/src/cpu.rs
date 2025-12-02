@@ -117,9 +117,9 @@ impl CPU {
             let code = self.mem_read(self.pc);
             self.pc += 1;
             let pc_state = self.pc;
-            let opcode = opcodes
-                .get(&code)
-                .unwrap_or_else(|| panic!("OpCode {:x} is not recognized", code));
+            let opcode = opcodes.get(&code).unwrap_or_else(|| {
+                panic!("OpCode {:x} ast 0x{:x} is not recognized", code, self.pc)
+            });
 
             match code {
                 0xA9 | 0xA5 | 0xB5 | 0xAD | 0xBD | 0xB9 | 0xA1 | 0xB1 => {

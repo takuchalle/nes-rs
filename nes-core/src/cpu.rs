@@ -178,6 +178,10 @@ impl CPU {
                     self.lsr(&opcode.mode);
                 }
 
+                0x90 => {
+                    self.branch(!self.status.get_bit(STATUS_BIT_C));
+                }
+
                 0xb0 => {
                     self.branch(self.status.get_bit(STATUS_BIT_C));
                 }

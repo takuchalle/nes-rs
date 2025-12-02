@@ -1,10 +1,28 @@
 use crossterm::event::{Event, KeyCode, poll, read};
+use crossterm::style::{Colors, Print};
+use crossterm::{ExecutableCommand, cursor, queue, style, terminal};
 use nes_core::Nes;
 use rand::prelude::*;
+use std::io::Write;
+use std::io::stdout;
 use std::{io, time::Duration};
 
 fn is_event_available() -> io::Result<bool> {
     poll(Duration::from_secs(0))
+}
+
+fn color(byte: u8) -> style::Color {
+    match byte {
+        0 => style::Color::Black,
+        1 => style::Color::White,
+        2 | 9 => style::Color::Grey,
+        3 | 10 => style::Color::Red,
+        4 | 11 => style::Color::Green,
+        5 | 12 => style::Color::Blue,
+        6 | 13 => style::Color::Magenta,
+        7 | 14 => style::Color::Yellow,
+        _ => style::Color::Cyan,
+    }
 }
 
 fn main() {
@@ -34,8 +52,16 @@ fn main() {
     ];
 
     let mut _nes = Nes::new(&game_code);
+    let mut screen_state = [style::Color::White; 32 * 32];
 
-    _nes.exec(|cpu| {
+    let mut stdout = stdout();
+    stdout
+        .execute(terminal::Clear(terminal::ClearType::All))
+        .unwrap()
+        .flush()
+        .unwrap();
+
+    _nes.exec(move |cpu| {
         cpu.mem_write(0xFE, rng.random_range(1..=16));
 
         if is_event_available().unwrap_or(false) {
@@ -43,10 +69,10 @@ fn main() {
                 Ok(event) => match event {
                     Event::Key(event) => match event.code {
                         KeyCode::Char('q') => std::process::exit(0),
-                        KeyCode::Up => cpu.mem_write(0xff, 0x77),
-                        KeyCode::Down => cpu.mem_write(0xff, 0x64),
-                        KeyCode::Left => cpu.mem_write(0xff, 0x61),
-                        KeyCode::Right => cpu.mem_write(0xff, 0x73),
+                        KeyCode::Up => cpu.mem_write(0xFF, 0x77),
+                        KeyCode::Down => cpu.mem_write(0xFF, 0x73),
+                        KeyCode::Left => cpu.mem_write(0xFF, 0x61),
+                        KeyCode::Right => cpu.mem_write(0xFF, 0x64),
                         _ => {}
                     },
                     _ => {}
@@ -54,5 +80,22 @@ fn main() {
                 _ => {}
             }
         }
+
+        for y in 0..32 {
+            for x in 0..32 {
+                let color_idx = cpu.mem_read(0x200 + y * 32 + x);
+                let color = color(color_idx);
+
+                if color != screen_state[(y * 32 + x) as usize] {
+                    queue!(stdout, cursor::MoveTo(x, y)).unwrap();
+                    queue!(stdout, style::SetColors(Colors::new(color, color))).unwrap();
+                    queue!(stdout, Print("x")).unwrap();
+                    screen_state[(y * 32 + x) as usize] = color;
+                }
+            }
+        }
+
+        stdout.flush().unwrap();
+        std::thread::sleep(std::time::Duration::new(0, 1));
     });
 }

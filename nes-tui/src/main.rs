@@ -1,5 +1,11 @@
+use crossterm::event::{Event, KeyCode, poll, read};
 use nes_core::Nes;
 use rand::prelude::*;
+use std::{io, time::Duration};
+
+fn is_event_available() -> io::Result<bool> {
+    poll(Duration::from_secs(0))
+}
 
 fn main() {
     let mut rng = rand::rng();
@@ -31,5 +37,22 @@ fn main() {
 
     _nes.exec(|cpu| {
         cpu.mem_write(0xFE, rng.random_range(1..=16));
+
+        if is_event_available().unwrap_or(false) {
+            match read() {
+                Ok(event) => match event {
+                    Event::Key(event) => match event.code {
+                        KeyCode::Char('q') => std::process::exit(0),
+                        KeyCode::Up => cpu.mem_write(0xff, 0x77),
+                        KeyCode::Down => cpu.mem_write(0xff, 0x64),
+                        KeyCode::Left => cpu.mem_write(0xff, 0x61),
+                        KeyCode::Right => cpu.mem_write(0xff, 0x73),
+                        _ => {}
+                    },
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
     });
 }

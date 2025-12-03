@@ -1,6 +1,6 @@
 use crossterm::event::{Event, KeyCode, poll, read};
 use crossterm::style::{Colors, Print};
-use crossterm::{ExecutableCommand, cursor, queue, style, terminal};
+use crossterm::{ExecutableCommand, QueueableCommand, cursor, queue, style, terminal};
 use nes_core::Nes;
 use rand::prelude::*;
 use std::io::Write;
@@ -25,7 +25,7 @@ fn color(byte: u8) -> style::Color {
     }
 }
 
-fn main() {
+fn main() -> std::io::Result<()> {
     let mut rng = rand::rng();
     let game_code = vec![
         0x20, 0x06, 0x06, 0x20, 0x38, 0x06, 0x20, 0x0d, 0x06, 0x20, 0x2a, 0x06, 0x60, 0xa9, 0x02,
@@ -51,34 +51,30 @@ fn main() {
         0x60, 0xa2, 0x00, 0xea, 0xea, 0xca, 0xd0, 0xfb, 0x60,
     ];
 
-    let mut _nes = Nes::new(&game_code);
+    let mut nes = Nes::new(&game_code);
     let mut screen_state = [style::Color::White; 32 * 32];
 
     let mut stdout = stdout();
     stdout
-        .execute(terminal::Clear(terminal::ClearType::All))
-        .unwrap()
-        .flush()
-        .unwrap();
+        .execute(terminal::Clear(terminal::ClearType::All))?
+        .flush()?;
 
-    _nes.exec(move |cpu| {
+    let res = nes.exec(|cpu| {
         cpu.mem_write(0xFE, rng.random_range(1..=16));
 
-        if is_event_available().unwrap_or(false) {
-            match read() {
-                Ok(event) => match event {
-                    Event::Key(event) => match event.code {
-                        KeyCode::Char('q') => std::process::exit(0),
-                        KeyCode::Up => cpu.mem_write(0xFF, 0x77),
-                        KeyCode::Down => cpu.mem_write(0xFF, 0x73),
-                        KeyCode::Left => cpu.mem_write(0xFF, 0x61),
-                        KeyCode::Right => cpu.mem_write(0xFF, 0x64),
-                        _ => {}
-                    },
-                    _ => {}
-                },
+        if is_event_available().unwrap_or(false)
+            && let Event::Key(keyevent) = read()?
+        {
+            match keyevent.code {
+                KeyCode::Char('q') => {
+                    return Err(io::Error::from(io::ErrorKind::Interrupted));
+                }
+                KeyCode::Up => cpu.mem_write(0xFF, 0x77),
+                KeyCode::Down => cpu.mem_write(0xFF, 0x73),
+                KeyCode::Left => cpu.mem_write(0xFF, 0x61),
+                KeyCode::Right => cpu.mem_write(0xFF, 0x64),
                 _ => {}
-            }
+            };
         }
 
         for y in 0..32 {
@@ -87,15 +83,24 @@ fn main() {
                 let color = color(color_idx);
 
                 if color != screen_state[(y * 32 + x) as usize] {
-                    queue!(stdout, cursor::MoveTo(x, y)).unwrap();
-                    queue!(stdout, style::SetColors(Colors::new(color, color))).unwrap();
-                    queue!(stdout, Print("x")).unwrap();
+                    queue!(stdout, cursor::MoveTo(x, y))?;
+                    queue!(stdout, style::SetColors(Colors::new(color, color)))?;
+                    queue!(stdout, Print("x"))?;
                     screen_state[(y * 32 + x) as usize] = color;
                 }
             }
         }
 
-        stdout.flush().unwrap();
+        stdout.flush()?;
         std::thread::sleep(std::time::Duration::new(0, 1));
+
+        Ok(())
     });
+
+    stdout
+        .queue(style::ResetColor)?
+        .execute(terminal::Clear(terminal::ClearType::All))?
+        .flush()?;
+
+    res
 }

@@ -103,23 +103,24 @@ impl CPU {
     }
 
     pub fn run(&mut self) {
-        self.run_with_callback(|_| {});
+        self.run_with_callback(|_| Ok(())).unwrap();
     }
 
-    pub fn run_with_callback<F>(&mut self, mut callback: F)
+    pub fn run_with_callback<F>(&mut self, mut callback: F) -> std::io::Result<()>
     where
-        F: FnMut(&mut CPU),
+        F: FnMut(&mut CPU) -> std::io::Result<()>,
     {
         let opcodes = &opcodes::OPCODES_MAP;
         loop {
-            callback(self);
+            callback(self)?;
 
             let code = self.mem_read(self.pc);
             self.pc += 1;
             let pc_state = self.pc;
-            let opcode = opcodes.get(&code).unwrap_or_else(|| {
-                panic!("OpCode {:x} ast 0x{:x} is not recognized", code, self.pc)
-            });
+            let opcode = match opcodes.get(&code) {
+                Some(o) => o,
+                None => return Err(std::io::Error::from(std::io::ErrorKind::Unsupported)),
+            };
 
             match code {
                 0xA9 | 0xA5 | 0xB5 | 0xAD | 0xBD | 0xB9 | 0xA1 | 0xB1 => {
@@ -335,7 +336,7 @@ impl CPU {
                 0x28 => self.status = self.stack_pop(),
                 0xea => {} // NOP
                 0x00 => {
-                    return;
+                    return Ok(());
                 }
                 _ => todo!(),
             }

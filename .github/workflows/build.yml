@@ -17,10 +17,13 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run cargo format check
-        run: cargo fmt -- --check 
+        run: cargo fmt -- --check
 
       - name: Run cargo check
         run: cargo check
+
+      - name: Run cargo clippy
+        run: cargo clippy
 
       - name: Run cargo test
         run: cargo test --all-features
